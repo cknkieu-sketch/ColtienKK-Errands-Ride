@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>ColtienKK Errands & Ride — Instant Quote</title>
+  <meta name="description" content="Mobile booking for rides, errands, and delivery in SE Iowa. Get an instant quote before you commit — logged to Google Sheets and emailed as a PDF." />
+  <meta name="theme-color" content="#0d9488" />
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    :root{--brand:#0d9488;--brand-ink:#115e59;--ink:#0f172a;--muted:#475569;--bg:#f8fafc;--card:#ffffff;--ring:#99f6e4;--radius:18px;--focus:0 0 0 3px rgba(13,148,136,.35)}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans',sans-serif;color:var(--ink);background:var(--bg)}
+    header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#ecfeff,#f0fdfa);border-bottom:1px solid #e2e8f0}
+    .wrap{max-width:940px;margin-inline:auto;padding:16px}
+    .brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:12px;background:var(--brand);display:grid;place-items:center;color:#fff;font-weight:800}
+    h1{font-size:1.2rem;margin:0}.tag{font-size:.84rem;color:var(--muted)}
+    main{padding:16px}.grid{display:grid;gap:16px}@media(min-width:860px){.grid{grid-template-columns:1.1fr .9fr}}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 6px 22px rgba(2,8,23,.06);border:1px solid #e2e8f0}.card h2{margin:0 0 14px 0;font-size:1.1rem}.card .pad{padding:16px}
+    form{display:grid;gap:14px}.row{display:grid;gap:10px}.row.cols-2{grid-template-columns:1fr 1fr}.row.cols-3{grid-template-columns:1fr 1fr 1fr}
+    label{font-size:.94rem;font-weight:600}
+    input,select,textarea,button{width:100%;padding:12px 12px;border-radius:12px;border:1px solid #cbd5e1;background:#fff;font:inherit;color:inherit}
+    input:focus,select:focus,textarea:focus{outline:none;box-shadow:var(--focus);border-color:#14b8a6}
+    textarea{min-height:80px;resize:vertical}.hint{font-size:.8rem;color:var(--muted)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:12px;border:1px solid transparent;font-weight:700;cursor:pointer}
+    .btn-primary{background:var(--brand);color:#fff}.btn-primary:disabled{opacity:.5;cursor:not-allowed}.btn-ghost{background:#fff;color:var(--brand);border-color:#99f6e4}
+    .quote{display:grid;gap:8px;font-size:.98rem}.price{font-size:1.6rem;font-weight:800;color:var(--brand-ink)}.muted{color:var(--muted)}.ok{color:#059669}.bad{color:#b91c1c}
+    footer{padding:18px;text-align:center;color:var(--muted);font-size:.86rem}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#ecfeff;color:#0e7490;border:1px solid #cffafe;font-size:.82rem}
+    .dev{display:none;margin-top:12px}.dev.show{display:block}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap brand">
+      <div class="logo" aria-hidden="true">KK</div>
+      <div>
+        <h1>ColtienKK Errands & Ride</h1>
+        <div class="tag">Reliable rides, errands, and delivery — Burlington, IA & nearby</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <a class="pill" href="tel:15632711186">Call: 563‑271‑1186</a>
+        <a class="pill" href="mailto:coltienkk@gmail.com">Email: coltienkk@gmail.com</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <section class="card">
+        <div class="pad">
+          <h2>Book & Get Instant Quote</h2>
+          <form id="bookingForm" novalidate>
+            <div class="row cols-2">
+              <div><label for="name">Your name</label><input id="name" required placeholder="Jane Doe"></div>
+              <div><label for="phone">Phone</label><input id="phone" required inputmode="tel" placeholder="563‑555‑1234"></div>
+            </div>
+            <div class="row cols-2">
+              <div><label for="email">Email (for PDF quote)</label><input id="email" required placeholder="you@example.com"></div>
+              <div><label for="datetime">When do you need it?</label><input id="datetime" type="datetime-local" required><div class="hint">Times are Central Time (America/Chicago).</div></div>
+            </div>
+            <fieldset class="row">
+              <legend class="sr-only">Service Type</legend>
+              <label for="service">Service type</label>
+              <select id="service" required>
+                <option value="">Select a service…</option>
+                <option value="ride">Ride (Point‑to‑Point)</option>
+                <option value="errands">Errands (Shopping / Pickup / Drop‑off)</option>
+                <option value="delivery">Delivery / Courier</option>
+                <option value="other">Other (describe)</option>
+              </select>
+              <textarea id="otherText" placeholder="Describe your request" style="display:none"></textarea>
+            </fieldset>
+            <div class="row">
+              <label>Pickup address</label>
+              <div class="row cols-2">
+                <input id="p_street" placeholder="Street address" required>
+                <input id="p_city" placeholder="City" required value="Burlington">
+              </div>
+              <div class="row cols-3">
+                <select id="p_state" required>
+                  <option value="">State</option>
+                  <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+                  <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+                  <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option selected>IA</option>
+                  <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+                  <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+                  <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+                  <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+                  <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+                  <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+                  <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option><option>DC</option>
+                </select>
+                <input id="p_zip" placeholder="ZIP" inputmode="numeric" required value="52601">
+                <input id="p_notes" placeholder="Apt / Notes (optional)">
+              </div>
+            </div>
+            <div class="row">
+              <label>Drop‑off address</label>
+              <div class="row cols-2">
+                <input id="d_street" placeholder="Street address" required>
+                <input id="d_city" placeholder="City" required value="Burlington">
+              </div>
+              <div class="row cols-3">
+                <select id="d_state" required>
+                  <option value="">State</option>
+                  <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+                  <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+                  <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option selected>IA</option>
+                  <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+                  <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+                  <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+                  <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+                  <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+                  <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+                  <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option><option>DC</option>
+                </select>
+                <input id="d_zip" placeholder="ZIP" inputmode="numeric" required value="52601">
+                <input id="d_notes" placeholder="Suite / Notes (optional)">
+              </div>
+            </div>
+            <div class="hint">Quotes include: Office → Pickup → Drop‑off → Office (round‑trip).</div>
+            <div class="actions">
+              <button class="btn btn-primary" id="btnQuote" type="button">Get Quote</button>
+              <button class="btn btn-ghost" id="btnReset" type="reset">Reset</button>
+            </div>
+            <div id="formMsg" class="hint" aria-live="polite"></div>
+          </form>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="pad">
+          <h2>Your Quote</h2>
+          <div id="quoteBox" class="quote"><div class="muted">Fill the form and tap <strong>Get Quote</strong>.</div></div>
+          <div class="actions" style="margin-top:10px">
+            <button class="btn btn-primary" id="btnConfirm" type="button" disabled>Send PDF + Log Booking</button>
+            <button class="btn btn-ghost" id="btnPdf" type="button" disabled>Download PDF Only</button>
+          </div>
+          <div id="quoteMsg" class="hint" aria-live="polite"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>© <span id="year"></span> ColtienKK Errands & Ride · Burlington, IA · Friendly, fast, and dependable.</footer>
+
+  <script>
+    const CONFIG = {
+      office: { address: '2617 Evergreen Drive', city: 'Burlington', state: 'IA', zip: '52601' },
+      orsKey: 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImI5YzhhMzQ0NTVjZjRmYWJhMDgxZDUzODI3NTIwZjg5IiwiaCI6Im11cm11cjY0In0=',
+      sheetWebhook: 'https://script.google.com/macros/s/AKfycbz40aMDAInnAoRRKk3visy5Z3SRUnFHOSB4aW88eWjguLCDiGNFm1ihrfmyG3saSyk/exec',
+      timezone: 'America/Chicago',
+      pricing: { base: 5.00, perMile: 2.25, minimum: 12.00, serviceFees: { ride: 0, errands: 3.00, delivery: 5.00, other: 0 } }
+    };
+
+    const ENV = { isFile: location.protocol === 'file:' };
+    const $ = (sel) => document.querySelector(sel);
+    function setQuoteBox(html){ $('#quoteBox').innerHTML = html; }
+    function setMsg(text, cls){ const el=$('#formMsg'); el.textContent=text; el.className='hint '+(cls||''); }
+    function setQuoteMsg(text, cls){ const el=$('#quoteMsg'); el.textContent=text; el.className='hint '+(cls||''); }
+    function combineAddress({street,city,state,zip,notes}){ return `${street}, ${city}, ${state} ${zip}${notes? ' ('+notes+')':''}`.trim(); }
+    function combineOffice(){ const o=CONFIG.office; return `${o.address}, ${o.city}, ${o.state} ${o.zip}`; }
+    function fmtMoney(n){ return `$${Number(n).toFixed(2)}`; } function fmtMiles(m){ return `${m.toFixed(2)} mi`; } function fmtMins(s){ return `${Math.round(s/60)} min`; }
+    function nowCT(){ return new Date(new Date().toLocaleString('en-US',{timeZone:CONFIG.timezone})); }
+    function tomorrow9amLocal(){ const d=nowCT(); d.setDate(d.getDate()+1); d.setHours(9,0,0,0); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#039;"}[c])); }
+    function haversineMiles(a,b){ const toRad=x=>x*Math.PI/180,R=3958.7613; const dLat=toRad(b.lat-a.lat), dLon=toRad(b.lon-a.lon); const lat1=toRad(a.lat), lat2=toRad(b.lat); const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+
+    async function geocodeAddress(full){
+      const url=new URL('https://api.openrouteservice.org/geocode/search');
+      url.searchParams.set('api_key', CONFIG.orsKey);
+      url.searchParams.set('text', full);
+      url.searchParams.set('size', '1');
+      url.searchParams.set('boundary.country','US');
+      const res=await fetch(url,{headers:{'Accept':'application/json'}});
+      if(!res.ok) throw new Error('Geocoding failed');
+      const data=await res.json();
+      if(!data.features||!data.features.length) throw new Error('Address not found');
+      const [lon,lat]=data.features[0].geometry.coordinates;
+      return {lon,lat};
+    }
+    function extractORS(ds){
+      if(ds && ds.features && ds.features[0] && ds.features[0].properties){
+        const p=ds.features[0].properties;
+        if(p.summary){ return {meters:p.summary.distance, seconds:p.summary.duration}; }
+        if(p.segments && p.segments.length){
+          const m=p.segments.reduce((a,s)=>a+s.distance,0), s=p.segments.reduce((a,s)=>a+s.duration,0);
+          return {meters:m, seconds:s};
+        }
+      }
+      if(ds && ds.routes && ds.routes[0]){
+        const r=ds.routes[0];
+        if(r.summary){ return {meters:r.summary.distance, seconds:r.summary.duration}; }
+        if(r.segments && r.segments.length){
+          const m=r.segments.reduce((a,s)=>a+s.distance,0), s=r.segments.reduce((a,s)=>a+s.duration,0);
+          return {meters:m, seconds:s};
+        }
+      }
+      if(ds && ds.error && ds.error.message){ throw new Error('ORS: '+ds.error.message); }
+      throw new Error('No route summary');
+    }
+    async function legDistanceSeconds(a,b){
+      const res=await fetch('https://api.openrouteservice.org/v2/directions/driving-car',{
+        method:'POST', headers:{'Content-Type':'application/json','Authorization': CONFIG.orsKey},
+        body: JSON.stringify({coordinates:[[a.lon,a.lat],[b.lon,b.lat]]})
+      });
+      const text=await res.text(); let data={}; try{ data = text ? JSON.parse(text) : {}; }catch{}
+      if(!res.ok){ const msg=(data && data.error && data.error.message)?data.error.message:(text||'Routing failed'); throw new Error('Routing failed: '+msg); }
+      return extractORS(data);
+    }
+
+    function calcPrice(miles, service){ const p=CONFIG.pricing; const fee=(p.base+(miles*p.perMile)+(p.serviceFees[service]||0)); return Math.max(fee,p.minimum); }
+
+    async function buildQuotePDF(payload){
+      const { jsPDF }=window.jspdf||{}; if(!jsPDF) throw new Error('PDF library not loaded');
+      const doc=new jsPDF({unit:'pt',format:'letter'}); const line=y=>doc.line(48,y,564,y); let y=64;
+      doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text('ColtienKK Errands & Ride — Quote',48,y); y+=10; line(y); y+=24;
+      doc.setFont('helvetica',''); doc.setFontSize(12);
+      const rows=[['Customer',`${payload.name} · ${payload.phone}`],['Email',payload.email],['Requested',payload.datetimeStr],['Service',payload.serviceLabel+(payload.otherText?` — ${payload.otherText}`:'')],['Pickup',payload.pickupCombined],['Drop‑off',payload.dropoffCombined],['Office',payload.officeCombined],['Distance',`${payload.miles.toFixed(2)} mi`],['Est. Time',fmtMins(payload.seconds)],['Price',fmtMoney(payload.price)]];
+      for(const [k,v] of rows){ doc.setFont('helvetica','bold'); doc.text(`${k}:`,48,y); doc.setFont('helvetica',''); doc.text(String(v),140,y,{maxWidth:420}); y+=20; }
+      y+=10; line(y); y+=24; doc.setFontSize(10);
+      doc.text('Includes round‑trip: Office → Pickup → Drop‑off → Office. Quote may be approximate if routing service was unavailable.',48,y);
+      y+=16; doc.text('Questions? 563‑271‑1186 · coltienkk@gmail.com',48,y);
+      const fileName=`ColtienKK_Quote_${new Date().toISOString().slice(0,10)}.pdf`; const pdfBlob=doc.output('blob');
+      const base64=await new Promise((resolve,reject)=>{const r=new FileReader(); r.onload=()=>resolve(r.result.split(',')[1]); r.onerror=reject; r.readAsDataURL(pdfBlob);});
+      return {fileName, base64, blob: pdfBlob};
+    }
+
+    // ⭐ CORS-friendly POST to Apps Script (text/plain avoids preflight)
+    async function postToSheet(payload){
+      const res=await fetch(CONFIG.sheetWebhook,{
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(payload),
+        mode:'cors',
+        cache:'no-store',
+        redirect:'follow'
+      });
+      const text=await res.text().catch(()=> '');
+      if(!res.ok) throw new Error(`Webhook ${res.status}: ${text}`);
+      let json; try{ json=JSON.parse(text);}catch{ json={status:'ok', raw:text}; }
+      return json;
+    }
+
+    let lastQuote=null;
+
+    async function handleQuote(){
+      setMsg('', '');
+      const form=getFormData(); if(!form.ok){ setMsg(form.msg,'bad'); return; }
+      if(ENV.isFile){ setQuoteBox('<div class="bad">Open via http(s), not file:// . Use a local server (python -m http.server) or GitHub Pages.</div>'); return; }
+      if(!CONFIG.orsKey || CONFIG.orsKey.startsWith('PASTE_')){ setQuoteBox('<div class="bad">Missing OpenRouteService API key in CONFIG.</div>'); return; }
+
+      setQuoteBox('<div class="muted">Calculating route…</div>');
+      const officeCombined=combineOffice();
+      try{
+        const [offC,pickC,dropC]=await Promise.all([geocodeAddress(officeCombined),geocodeAddress(form.pickupCombined),geocodeAddress(form.dropoffCombined)]);
+        let leg1,leg2,leg3, usedFallback=false;
+        try{
+          [leg1,leg2,leg3]=await Promise.all([legDistanceSeconds(offC,pickC),legDistanceSeconds(pickC,dropC),legDistanceSeconds(dropC,offC)]);
+        }catch(e){
+          usedFallback=true;
+          const inflate=1.2, mph=25;
+          const m1=haversineMiles(offC,pickC)*inflate, m2=haversineMiles(pickC,dropC)*inflate, m3=haversineMiles(dropC,offC)*inflate;
+          leg1={meters:m1*1609.344, seconds:(m1/mph)*3600};
+          leg2={meters:m2*1609.344, seconds:(m2/mph)*3600};
+          leg3={meters:m3*1609.344, seconds:(m3/mph)*3600};
+          setMsg('Using approximate distance (routing service unavailable).','bad');
+        }
+        const meters=leg1.meters+leg2.meters+leg3.meters;
+        const seconds=leg1.seconds+leg2.seconds+leg3.seconds;
+        const miles=meters/1609.344;
+        const price=calcPrice(miles, form.service);
+        lastQuote={...form, officeCombined, miles, seconds, price, legMiles:[leg1.meters/1609.344,leg2.meters/1609.344,leg3.meters/1609.344], approx: usedFallback};
+        renderQuote(lastQuote);
+        document.querySelector('#btnConfirm').disabled=false; document.querySelector('#btnPdf').disabled=false;
+      }catch(err){
+        const msg=(err&&err.message)||'Could not compute route. Please verify addresses.';
+        setQuoteBox(`<div class="bad">${msg}</div>`);
+        document.querySelector('#btnConfirm').disabled=true; document.querySelector('#btnPdf').disabled=true;
+      }
+    }
+
+    async function handleConfirm(){
+      if(!lastQuote) return;
+      try{
+        setQuoteMsg('Building PDF…','');
+        const pdf=await buildQuotePDF(lastQuote);
+        if(!CONFIG.sheetWebhook || CONFIG.sheetWebhook.startsWith('PASTE_')){
+          setQuoteMsg('PDF ready. Webhook not configured — download below.','bad');
+          const url=URL.createObjectURL(pdf.blob); const a=document.createElement('a'); a.href=url; a.download=pdf.fileName; a.click(); return;
+        }
+        const payload={...lastQuote, quotePDFBase64: pdf.base64, quoteFilename: pdf.fileName};
+        await postToSheet(payload);
+        setQuoteMsg('Success! Your quote was emailed and logged.','ok');
+      }catch(err){
+        setQuoteMsg(err.message||'There was a problem sending your quote. You can still download it.','bad');
+      }
+    }
+
+    async function handlePdfOnly(){
+      if(!lastQuote) return;
+      try{
+        const pdf=await buildQuotePDF(lastQuote);
+        const url=URL.createObjectURL(pdf.blob); const a=document.createElement('a'); a.href=url; a.download=pdf.fileName; a.click();
+        setQuoteMsg('Downloaded PDF to your device.','ok');
+      }catch(err){ setQuoteMsg('Could not generate PDF.','bad'); }
+    }
+
+    function renderQuote(q){
+      const approx=q.approx? ' <span class="bad">(approx)</span>':'';
+      const html=`
+        <div><strong>Service:</strong> ${q.serviceLabel}${q.otherText? ' — '+escapeHtml(q.otherText):''}</div>
+        <div><strong>Pickup:</strong> ${escapeHtml(q.pickupCombined)}</div>
+        <div><strong>Drop‑off:</strong> ${escapeHtml(q.dropoffCombined)}</div>
+        <div><strong>Round‑trip Distance:</strong> ${fmtMiles(q.miles)}${approx} · <span class="muted">Est. ${fmtMins(q.seconds)}</span></div>
+        <div class="price">${fmtMoney(q.price)}</div>
+        <div class="muted">Includes Office → Pickup → Drop‑off → Office</div>`;
+      setQuoteBox(html);
+    }
+
+    function getFormData(){
+      const name=$('#name').value.trim(), phone=$('#phone').value.trim(), email=$('#email').value.trim();
+      const dtVal=$('#datetime').value, service=$('#service').value, otherText=$('#otherText').value.trim();
+      const p={street:$('#p_street').value.trim(),city:$('#p_city').value.trim(),state:$('#p_state').value,zip:$('#p_zip').value.trim(),notes:$('#p_notes').value.trim()};
+      const d={street:$('#d_street').value.trim(),city:$('#d_city').value.trim(),state:$('#d_state').value,zip:$('#d_zip').value.trim(),notes:$('#d_notes').value.trim()};
+      if(!name||!phone||!email||!dtVal||!service) return {ok:false,msg:'Please complete all required fields.'};
+      if(service==='other'&&!otherText) return {ok:false,msg:'Please describe your request.'};
+      if(!p.street||!p.city||!p.state||!p.zip) return {ok:false,msg:'Please complete the pickup address.'};
+      if(!d.street||!d.city||!d.state||!d.zip) return {ok:false,msg:'Please complete the drop‑off address.'};
+      const pickupCombined=combineAddress(p), dropoffCombined=combineAddress(d);
+      const dt=new Date(dtVal);
+      const datetimeStr=dt.toLocaleString('en-US',{timeZone:CONFIG.timezone,hour12:true,year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const labelMap={ride:'Ride (Point‑to‑Point)',errands:'Errands',delivery:'Delivery / Courier',other:'Other'};
+      return { ok:true, name, phone, email, datetime: dt.toISOString(), datetimeStr, service, serviceLabel: labelMap[service]||'Service', otherText, pickupCombined, dropoffCombined };
+    }
+
+    document.querySelector('#datetime').value=tomorrow9amLocal();
+    document.querySelector('#year').textContent=String(new Date().getFullYear());
+    document.querySelector('#service').addEventListener('change',e=>{ document.querySelector('#otherText').style.display = e.target.value==='other' ? 'block' : 'none'; });
+    document.querySelector('#btnQuote').addEventListener('click',handleQuote);
+    document.querySelector('#btnConfirm').addEventListener('click',handleConfirm);
+    document.querySelector('#btnPdf').addEventListener('click',handlePdfOnly);
+    document.querySelector('#bookingForm').addEventListener('reset',()=>{
+      setTimeout(()=>{
+        document.querySelector('#datetime').value=tomorrow9amLocal();
+        setQuoteBox('<div class="muted">Fill the form and tap <strong>Get Quote</strong>.</div>');
+        setMsg('',''); setQuoteMsg('','');
+        document.querySelector('#btnConfirm').disabled=true; document.querySelector('#btnPdf').disabled=true; lastQuote=null;
+      },0);
+    });
+  </script>
+</body>
+</html>
