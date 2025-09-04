@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Admin • ColtienKK</title>
+  <meta name="theme-color" content="#0d9488" />
+  <style>
+    :root{ --brand:#0d9488; --ink:#0f172a; --bg:#f8fafc; --card:#fff; --muted:#475569; --radius:18px; }
+    body{margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial; color:var(--ink); background:var(--bg)}
+    header{padding:16px; background:linear-gradient(90deg,var(--brand),#14b8a6); color:#fff}
+    main{padding:16px; max-width:900px; margin:0 auto}
+    .card{background:var(--card); border-radius:var(--radius); padding:16px; box-shadow:0 10px 30px rgba(2,6,23,.06); border:1px solid #e2e8f0; margin-bottom:14px}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    label{font-size:13px; color:var(--muted); margin-bottom:6px; display:block}
+    input, select, textarea{width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:12px}
+    .btn{display:inline-block; padding:12px 16px; border-radius:999px; background:var(--brand); color:#fff; text-decoration:none; border:none; cursor:pointer; font-weight:600}
+    .muted{color:var(--muted); font-size:12px}
+    .grid{display:grid; gap:12px}
+    .kv{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed #e2e8f0}
+    @media (max-width:720px){ .row{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Admin (Hidden)</h1>
+  <div>Rates • ORS key • Office • Google Sheet</div>
+</header>
+<main>
+  <div class="card">
+    <p class="muted">Tip: Keep this page bookmarked but don't link it publicly. Access directly at <code>dev.html</code>.</p>
+    <div class="grid">
+      <div>
+        <label>OpenRouteService API Key</label>
+        <input id="orsKey" placeholder="paste your ORS key" />
+      </div>
+      <div>
+        <label>Google Sheet Web App URL</label>
+        <input id="sheetUrl" placeholder="https://script.google.com/macros/s/XXXX/exec" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Rates</h3>
+    <div class="row">
+      <div><label>Base fare ($)</label><input id="baseFare" type="number" step="0.01" /></div>
+      <div><label>Per‑mile ($/mi)</label><input id="perMile" type="number" step="0.01" /></div>
+    </div>
+    <div class="row">
+      <div><label>Per‑minute ($/min)</label><input id="perMinute" type="number" step="0.01" /></div>
+      <div><label>Minimum fare ($)</label><input id="minimumFare" type="number" step="0.01" /></div>
+    </div>
+    <div class="row">
+      <div><label>Free waiting minutes</label><input id="freeWaitMin" type="number" step="1" /></div>
+      <div><label>Waiting fee ($/min)</label><input id="waitPerMin" type="number" step="0.01" /></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Office Location</h3>
+    <div class="row">
+      <div><label>Address</label><input id="o_addr" placeholder="2617 Evergreen Drive" /></div>
+      <div><label>City</label><input id="o_city" placeholder="Burlington" /></div>
+    </div>
+    <div class="row">
+      <div><label>State</label><input id="o_state" placeholder="IA" /></div>
+      <div><label>Zip</label><input id="o_zip" placeholder="52601" /></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <button class="btn" id="save">Save Settings</button>
+    <a class="btn" style="background:#0ea5e9; margin-left:8px" href="index.html">Back to Booking</a>
+    <div class="kv" style="margin-top:12px"><span>Storage</span><b id="status">—</b></div>
+    <p class="muted">Settings are stored locally in your browser (<code>localStorage</code> as <code>ckk.config</code>).</p>
+  </div>
+</main>
+
+<script>
+const DEFAULT_CONFIG = {
+  orsKey: "REPLACE_WITH_YOUR_ORS_KEY",
+  rates: { baseFare:7.5, perMile:1.85, perMinute:0.35, minimumFare:12.0, freeWaitMin:10, waitPerMin:0.5 },
+  office: { addr:"2617 Evergreen Drive", city:"Burlington", state:"IA", zip:"52601" },
+  sheetWebAppUrl: ""
+};
+function getConfig(){
+  const raw = localStorage.getItem("ckk.config");
+  if(!raw) return DEFAULT_CONFIG;
+  try { return Object.assign({}, DEFAULT_CONFIG, JSON.parse(raw)); } catch(e){ return DEFAULT_CONFIG; }
+}
+function saveConfig(cfg){ localStorage.setItem("ckk.config", JSON.stringify(cfg)); }
+
+function fill(){
+  const c = getConfig();
+  document.getElementById("orsKey").value = c.orsKey || "";
+  document.getElementById("sheetUrl").value = c.sheetWebAppUrl || "";
+  document.getElementById("baseFare").value = c.rates.baseFare;
+  document.getElementById("perMile").value = c.rates.perMile;
+  document.getElementById("perMinute").value = c.rates.perMinute;
+  document.getElementById("minimumFare").value = c.rates.minimumFare;
+  document.getElementById("freeWaitMin").value = c.rates.freeWaitMin;
+  document.getElementById("waitPerMin").value = c.rates.waitPerMin;
+  document.getElementById("o_addr").value = c.office.addr;
+  document.getElementById("o_city").value = c.office.city;
+  document.getElementById("o_state").value = c.office.state;
+  document.getElementById("o_zip").value = c.office.zip;
+}
+fill();
+
+document.getElementById("save").addEventListener("click", ()=>{
+  const cfg = getConfig();
+  cfg.orsKey = document.getElementById("orsKey").value.trim();
+  cfg.sheetWebAppUrl = document.getElementById("sheetUrl").value.trim();
+  cfg.rates.baseFare = Number(document.getElementById("baseFare").value);
+  cfg.rates.perMile = Number(document.getElementById("perMile").value);
+  cfg.rates.perMinute = Number(document.getElementById("perMinute").value);
+  cfg.rates.minimumFare = Number(document.getElementById("minimumFare").value);
+  cfg.rates.freeWaitMin = Number(document.getElementById("freeWaitMin").value);
+  cfg.rates.waitPerMin = Number(document.getElementById("waitPerMin").value);
+  cfg.office.addr = document.getElementById("o_addr").value;
+  cfg.office.city = document.getElementById("o_city").value;
+  cfg.office.state = document.getElementById("o_state").value;
+  cfg.office.zip = document.getElementById("o_zip").value;
+  saveConfig(cfg);
+  document.getElementById("status").textContent = "Saved at " + new Date().toLocaleTimeString();
+});
+</script>
+</body>
+</html>

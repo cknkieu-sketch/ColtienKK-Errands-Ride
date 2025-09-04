@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ColtienKK Errands & Ride</title>
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="description" content="Reliable errands and ride services in SE Iowa. Fast mobile booking." />
+  <style>
+    :root{
+      --brand:#0d9488; /* teal-600 */
+      --ink:#0f172a;   /* slate-900 */
+      --muted:#475569; /* slate-600 */
+      --bg:#f8fafc;    /* slate-50 */
+      --card:#ffffff;
+      --ring:#99f6e4;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--ink);
+      background:var(--bg);
+      line-height:1.4;
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      background:linear-gradient(90deg,var(--brand),#14b8a6);
+      color:white;
+      padding:14px 16px;
+      box-shadow:0 2px 8px rgba(0,0,0,.12);
+    }
+    h1{font-size:22px; margin:0 0 4px}
+    .sub{opacity:.9; font-size:13px}
+    main{padding:16px; max-width:800px; margin:0 auto}
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(2,6,23,.06);
+      border:1px solid #e2e8f0;
+      padding:14px;
+      margin-bottom:14px;
+    }
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .row-3{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px}
+    .row > .col, .row-3 > .col{display:flex; flex-direction:column}
+    label{font-size:13px; color:var(--muted); margin-bottom:6px}
+    input, select, textarea, button{
+      font:inherit;
+    }
+    input, select, textarea{
+      padding:12px;
+      border-radius:12px;
+      border:1px solid #e2e8f0;
+      outline:2px solid transparent;
+      background:white;
+    }
+    input:focus, select:focus, textarea:focus{
+      outline:2px solid var(--ring);
+      border-color:#99f6e4;
+      box-shadow:0 0 0 4px rgba(153,246,228,.25);
+    }
+    textarea{min-height:90px; resize:vertical}
+    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{
+      border:none; padding:12px 16px; border-radius:999px; cursor:pointer;
+      background:var(--brand); color:white; font-weight:600;
+      box-shadow:0 6px 18px rgba(13,148,136,.25);
+    }
+    .btn.secondary{background:#0ea5e9; box-shadow:0 6px 18px rgba(14,165,233,.25)}
+    .btn.ghost{background:white; color:var(--brand); border:1px solid #99f6e4; box-shadow:none}
+    .note{font-size:12px; color:var(--muted)}
+    .pill{display:inline-block; padding:4px 8px; border-radius:999px; background:#ecfeff; color:#0e7490; font-size:12px; font-weight:600}
+    .price{
+      font-size:28px; font-weight:800; color:#064e3b;
+    }
+    .grid{display:grid; gap:12px}
+    .kv{display:flex; justify-content:space-between; font-size:14px; padding:6px 0; border-bottom:1px dashed #e2e8f0}
+    .hidden{display:none}
+    footer{padding:40px 16px; text-align:center; color:var(--muted); font-size:12px}
+    @media (max-width:720px){
+      .row, .row-3{grid-template-columns:1fr}
+    }
+    .linkish{color:#0ea5e9; text-decoration:underline; cursor:pointer}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ColtienKK Errands & Ride</h1>
+    <div class="sub">Mobile booking • Upfront quotes • Local & reliable</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="pill">Book a Service</div>
+      <h2 style="margin:6px 0 12px">Tell us about your trip</h2>
+
+      <div class="grid">
+        <div class="row">
+          <div class="col">
+            <label>Full Name</label>
+            <input id="name" placeholder="Jane Doe" autocomplete="name" />
+          </div>
+          <div class="col">
+            <label>Mobile</label>
+            <input id="phone" placeholder="563-271-1186" inputmode="tel" autocomplete="tel" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>Email</label>
+            <input id="email" placeholder="you@example.com" inputmode="email" autocomplete="email" />
+          </div>
+          <div class="col">
+            <label>Service Type</label>
+            <select id="service">
+              <option value="Ride">Ride (Point to Point)</option>
+              <option value="Errands">Errands (Shopping / Pickup / Drop‑off)</option>
+              <option value="Delivery">Delivery / Courier</option>
+              <option value="Other">Other (describe below)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col">
+          <label>Notes (optional / describe if "Other")</label>
+          <textarea id="notes" placeholder="Gate code, apartment #, items to pick up, etc."></textarea>
+        </div>
+
+        <h3 style="margin:16px 0 6px">Pickup</h3>
+        <div class="row-3">
+          <div class="col"><label>Address</label><input id="p_addr" placeholder="2617 Evergreen Dr" /></div>
+          <div class="col"><label>City</label><input id="p_city" placeholder="Burlington" /></div>
+          <div class="col"><label>State</label>
+            <select id="p_state"></select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col"><label>Zip</label><input id="p_zip" placeholder="52601" inputmode="numeric" /></div>
+          <div class="col"><label>Date & Time</label><input id="when" type="datetime-local" /></div>
+        </div>
+
+        <h3 style="margin:16px 0 6px">Drop‑off</h3>
+        <div class="row-3">
+          <div class="col"><label>Address</label><input id="d_addr" placeholder="123 Main St" /></div>
+          <div class="col"><label>City</label><input id="d_city" placeholder="Burlington" /></div>
+          <div class="col"><label>State</label>
+            <select id="d_state"></select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col"><label>Zip</label><input id="d_zip" placeholder="52601" inputmode="numeric" /></div>
+          <div class="col">
+            <label>Expected Waiting Time (minutes)</label>
+            <input id="wait_min" type="number" min="0" step="1" placeholder="0" />
+            <div class="note">First <b>10 minutes</b> are included. Extra waiting is added to the quote.</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="quoteBtn">Get Quote</button>
+          <button class="btn secondary" id="bookBtn" disabled>Book Service</button>
+          <span class="linkish" id="openDev">Admin</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="quoteCard" class="card hidden">
+      <div class="pill">Your Quote</div>
+      <div style="display:flex; justify-content:space-between; align-items:end; gap:12px; flex-wrap:wrap">
+        <div>
+          <h2 style="margin:6px 0 2px">Estimated Total</h2>
+          <div class="price" id="q_total">$0.00</div>
+          <div class="note">tolls/parking not included • subject to availability</div>
+        </div>
+        <div style="text-align:right">
+          <div class="kv"><span>Distance</span><b id="q_miles">—</b></div>
+          <div class="kv"><span>Drive time</span><b id="q_minutes">—</b></div>
+          <div class="kv"><span>Waiting fee</span><b id="q_wait">$0.00</b></div>
+          <div class="kv"><span>Service</span><b id="q_service">—</b></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="kv"><span>Base fare</span><b id="q_base">$0.00</b></div>
+        <div class="kv"><span>Per‑mile</span><b id="q_pm">$0.00</b></div>
+        <div class="kv"><span>Per‑minute</span><b id="q_pt">$0.00</b></div>
+        <div class="kv"><span>Minimum fare</span><b id="q_min">$0.00</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>What you get</h3>
+      <ul>
+        <li>Upfront quote before you commit</li>
+        <li>Friendly, local driver</li>
+        <li>Simple mobile booking — no app needed</li>
+      </ul>
+      <div class="note">Questions? Email <a href="mailto:coltienkk@gmail.com">coltienkk@gmail.com</a> or call 563‑271‑1186</div>
+    </div>
+
+  </main>
+
+  <footer>© <span id="year"></span> ColtienKK Errands & Ride Service • Burlington, IA</footer>
+
+<script>
+/** ---------- Admin Config (persisted in localStorage via Dev page) ---------- **/
+const DEFAULT_CONFIG = {
+  orsKey: "REPLACE_WITH_YOUR_ORS_KEY",
+  rates: {
+    baseFare: 7.5,
+    perMile: 1.85,
+    perMinute: 0.35,
+    minimumFare: 12.0,
+    freeWaitMin: 10,
+    waitPerMin: 0.5
+  },
+  office: { addr:"2617 Evergreen Drive", city:"Burlington", state:"IA", zip:"52601" },
+  sheetWebAppUrl: ""
+};
+function getConfig(){
+  const raw = localStorage.getItem("ckk.config");
+  if(!raw) return DEFAULT_CONFIG;
+  try { return Object.assign({}, DEFAULT_CONFIG, JSON.parse(raw)); } catch(e){ return DEFAULT_CONFIG; }
+}
+function saveConfig(cfg){ localStorage.setItem("ckk.config", JSON.stringify(cfg)); }
+/** -------------------------------------------------------------------------- **/
+
+const STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+function fillStates(sel, def="IA"){
+  sel.innerHTML = STATES.map(s => `<option value="${s}" ${s===def?'selected':''}>${s}</option>`).join("");
+}
+fillStates(document.getElementById("p_state"));
+fillStates(document.getElementById("d_state"));
+
+document.getElementById("year").textContent = new Date().getFullYear();
+document.getElementById("openDev").addEventListener("click", ()=>{
+  location.href = "dev.html";
+});
+
+const $ = id => document.getElementById(id);
+let lastQuote = null; // stash quote used for booking
+
+function fullAddress(prefix){
+  return [$(`${prefix}_addr`).value, $(`${prefix}_city`).value, $(`${prefix}_state`).value, $(`${prefix}_zip`).value].filter(Boolean).join(", ");
+}
+
+function dollars(n){ return "$" + (Math.round(n*100)/100).toFixed(2); }
+
+async function geocode(text, key){
+  const url = `https://api.openrouteservice.org/geocode/search?api_key=${encodeURIComponent(key)}&text=${encodeURIComponent(text)}&size=1`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error("Geocoding failed");
+  const j = await r.json();
+  const feat = j.features && j.features[0];
+  if(!feat) throw new Error("No results for: " + text);
+  // ORS returns [lon, lat]
+  return { lat: feat.geometry.coordinates[1], lon: feat.geometry.coordinates[0] };
+}
+
+async function route(p, d, key){
+  const url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
+  const body = {
+    coordinates: [
+      [p.lon, p.lat],
+      [d.lon, d.lat]
+    ]
+  };
+  const r = await fetch(url, {
+    method: "POST",
+    headers: {
+      "content-type":"application/json",
+      "authorization": key
+    },
+    body: JSON.stringify(body)
+  });
+  if(!r.ok) throw new Error("Routing failed");
+  const j = await r.json();
+  const sum = j.features && j.features[0] && j.features[0].properties && j.features[0].properties.summary;
+  if(!sum) throw new Error("No route summary");
+  return { meters: sum.distance, seconds: sum.duration };
+}
+
+function computeQuote(cfg, meters, seconds, waitMin, serviceType){
+  const miles = meters / 1609.344;
+  const minutes = seconds / 60;
+  const r = cfg.rates;
+
+  const travel = r.baseFare + (r.perMile * miles) + (r.perMinute * minutes);
+  const waitingOver = Math.max(0, (waitMin||0) - (r.freeWaitMin||10));
+  const waitingFee = waitingOver * (r.waitPerMin||0);
+
+  let total = Math.max(travel, r.minimumFare) + waitingFee;
+
+  // Simple service-type adjustments if desired
+  const multipliers = { "Ride":1.0, "Errands":1.05, "Delivery":1.1, "Other":1.0 };
+  total *= multipliers[serviceType] || 1.0;
+
+  return { miles, minutes, waitingFee, total, base: r.baseFare, pm:r.perMile, pt:r.perMinute, min:r.minimumFare };
+}
+
+async function buildQuote(){
+  const cfg = getConfig();
+  const orsKey = cfg.orsKey && cfg.orsKey !== "REPLACE_WITH_YOUR_ORS_KEY" ? cfg.orsKey : null;
+  if(!orsKey){ alert("Please set your OpenRouteService API key in the Admin page."); return; }
+
+  const pText = fullAddress("p");
+  const dText = fullAddress("d");
+  if(!pText || !dText){ alert("Please fill both pickup and drop‑off addresses."); return; }
+
+  // Geocode + route
+  const [p, d] = await Promise.all([geocode(pText, orsKey), geocode(dText, orsKey)]);
+  const { meters, seconds } = await route(p, d, orsKey);
+
+  const waitMin = parseInt($("wait_min").value || "0", 10);
+  const serviceType = $("service").value;
+  const quote = computeQuote(cfg, meters, seconds, waitMin, serviceType);
+
+  lastQuote = {
+    ...quote,
+    pickup: pText,
+    dropoff: dText,
+    waitMin,
+    serviceType
+  };
+
+  // UI
+  $("q_total").textContent = dollars(quote.total);
+  $("q_miles").textContent = (quote.miles).toFixed(2) + " mi";
+  $("q_minutes").textContent = Math.round(quote.minutes) + " min";
+  $("q_wait").textContent = dollars(quote.waitingFee);
+  $("q_service").textContent = serviceType;
+  $("q_base").textContent = dollars(quote.base);
+  $("q_pm").textContent = dollars(quote.pm) + "/mi";
+  $("q_pt").textContent = dollars(quote.pt) + "/min";
+  $("q_min").textContent = dollars(quote.min);
+  $("quoteCard").classList.remove("hidden");
+  $("bookBtn").disabled = false;
+}
+
+async function bookNow(){
+  const cfg = getConfig();
+  if(!lastQuote){ alert("Please get a quote first."); return; }
+  const sheetUrl = cfg.sheetWebAppUrl;
+  if(!sheetUrl){ alert("Please set your Google Sheet Web App URL in the Admin page."); return; }
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    name: $("name").value,
+    phone: $("phone").value,
+    email: $("email").value,
+    serviceType: $("service").value,
+    notes: $("notes").value,
+    pickup_full: lastQuote.pickup,
+    dropoff_full: lastQuote.dropoff,
+    when: $("when").value,
+    miles: Number(lastQuote.miles.toFixed(2)),
+    minutes: Math.round(lastQuote.minutes),
+    wait_minutes: lastQuote.waitMin,
+    waiting_fee: Number(lastQuote.waitingFee.toFixed(2)),
+    total_quote: Number(lastQuote.total.toFixed(2))
+  };
+
+  try{
+    const r = await fetch(sheetUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"content-type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    // With no-cors we can't read the response, so just optimistic confirm:
+    alert("Booked! We'll contact you shortly to confirm. Thank you.");
+    // Soft reset:
+    $("bookBtn").disabled = true;
+  }catch(e){
+    alert("Booking failed. Please check your Web App URL in Admin.");
+  }
+}
+
+$("quoteBtn").addEventListener("click", async ()=>{
+  const btn = $("quoteBtn");
+  btn.disabled = true; btn.textContent = "Calculating…";
+  try { await buildQuote(); }
+  catch(e){ alert(e.message || "Failed to calculate quote"); }
+  finally{ btn.disabled = false; btn.textContent = "Get Quote"; }
+});
+
+$("bookBtn").addEventListener("click", async ()=>{
+  const btn = $("bookBtn");
+  btn.disabled = true; btn.textContent = "Booking…";
+  try { await bookNow(); }
+  finally{ btn.disabled = false; btn.textContent = "Book Service"; }
+});
+
+// Prefill sensible defaults
+$("p_city").value = "Burlington";
+$("p_state").value = "IA";
+$("p_zip").value = "52601";
+$("d_state").value = "IA";
+</script>
+</body>
+</html>
