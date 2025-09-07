@@ -148,6 +148,7 @@ byId('bookingForm').addEventListener('submit', async (e)=>{
       return;
     }
     const {total, miles, legs} = await calculateQuote();
+    console.debug('[CKK] Submitting payload to GAS:', cfg.gasWebAppUrl, payload);
 
     const payload = {
       version: byId('version').value,
@@ -179,8 +180,8 @@ byId('bookingForm').addEventListener('submit', async (e)=>{
       submittedAt: new Date().toISOString()
     };
 
-    const res = await fetch(cfg.gasWebAppUrl, {method:'POST', body: JSON.stringify(payload)});
-    if(!res.ok){ throw new Error('Error sending booking'); }
+    const res = await fetch(cfg.gasWebAppUrl, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload)});
+    if(!res.ok){ const txt = await res.text(); console.error('[CKK] GAS response not OK:', res.status, txt); throw new Error('Error sending booking: ' + res.status + ' ' + txt); }
     const data = await res.json();
 
     alert('Booked! A confirmation has been sent to your email' + (payload.carrier ? ' / phone.' : '.'));

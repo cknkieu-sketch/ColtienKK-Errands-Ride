@@ -109,3 +109,58 @@ function carrierGateway_(c){
 function normalizePhone_(p){ return String(p||'').replace(/\D/g,''); }
 function fullAddr_(a){ return `${a.address}, ${a.city}, ${a.state} ${a.zip}`; }
 function escapeHtml_(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function json_(obj){
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Simple GET endpoint for health checks and quick tests.
+// Examples:
+//  ?mode=ping      -> {"ok":true,"message":"pong"}
+//  ?mode=status    -> HTML status page (default)
+//  ?mode=test      -> returns a sample row would-be-appended (no write)
+function doGet(e){
+  try{
+    var mode = (e && e.parameter && e.parameter.mode) || 'status';
+    if (mode === 'ping'){
+      return json_({ ok:true, message:'pong', time:(new Date()).toISOString() });
+    }
+    if (mode === 'test'){
+      var sample = {
+        version:'v1.0.0',
+        service:'Ride (Point to Point)',
+        otherDetails:'',
+        name:'Test User',
+        phone:'5632711186',
+        email:'coltienkk@gmail.com',
+        carrier:'',
+        pickup:{address:'2617 Evergreen Drive', city:'Burlington', state:'IA', zip:'52601'},
+        drop:{address:'3001 Winegard Dr', city:'Burlington', state:'IA', zip:'52601'},
+        date:'2025-09-08',
+        time:'09:00',
+        waitMins:0,
+        notes:'',
+        quote:{ total:25.50, miles:6.2, rates:{base:10, perMile:1.90, waitPerMin:0.5, freeWaitMins:10}},
+        office:{address:'2617 Evergreen Drive', city:'Burlington', state:'IA', zip:'52601'},
+        business:{name:'ColtienKK Errands & Ride', email:'coltienkk@gmail.com', phone:'5632711186'},
+        submittedAt:(new Date()).toISOString()
+      };
+      return json_({ ok:true, sampleRow: buildRow_(sample) });
+    }
+
+    // default 'status' mode: ensure headers and return a small HTML page
+    var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
+    ensureHeaders_(sheet);
+    var html = HtmlService.createHtmlOutput(
+      '<div style="font-family:Arial;padding:16px">' +
+      '<h2>ColtienKK Booking Webhook</h2>' +
+      '<p>Status: <b>OK</b> — sheet "<code>'+SHEET_NAME+'</code>" on ID <code>'+SHEET_ID+'</code>.</p>' +
+      '<p>Try <code>?mode=ping</code> or <code>?mode=test</code>.</p>' +
+      '</div>'
+    );
+    return html;
+  }catch(err){
+    return json_({ok:false, error:String(err)});
+  }
+}
